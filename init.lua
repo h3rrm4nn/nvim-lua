@@ -103,6 +103,10 @@ local function map(mode, lhs, rhs, opts)
     vim.keymap.set(mode, lhs, rhs, opts)
 end
 
+-- treat long lines as break lines (useful when moving around in them)
+map('n', 'j', 'gj')
+map('n', 'k', 'gk')
+
 -- open new tab in directory of current buffer
 map('n', '<leader>te', ':tabedit <c-r>=expand("%:p:h")<cr>/')
 
