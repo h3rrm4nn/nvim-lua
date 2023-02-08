@@ -11,6 +11,8 @@ require('packer').startup(function()
 
   -- You add plugins here
   use 'h3rrm4nn/bubblegum' -- custom colorscheme
+  use 'junegunn/vim-easy-align'
+  use 'triglav/vim-visual-increment'
   use 'arcticicestudio/nord-vim' -- nord colorscheme
   use 'neovim/nvim-lspconfig' -- configs for lsp
   use {'neoclide/coc.nvim', branch = 'release'} -- conquer of completion
@@ -19,6 +21,11 @@ require('packer').startup(function()
   use 'tpope/vim-fugitive' -- git integration
   use 'numToStr/Comment.nvim' -- comment macros
   use 'gbprod/yanky.nvim' -- ringbuffer for copy/paste
+  use {'nvim-treesitter/nvim-treesitter'}
+  use {'nvim-orgmode/orgmode', config = function()
+      require('orgmode').setup{}
+  end
+}
 
 end)
 
@@ -34,12 +41,12 @@ local ok, _ = pcall(vim.cmd, 'colorscheme bubblegum-256-dark')
 -- local ok, _ = pcall(vim.cmd, 'colorscheme nord-vim')
 
 -- relative line numbers
-o.number = true
+o.number         = true
 o.relativenumber = true
-o.cursorline = true
+o.cursorline     = true
 
 -- map leader key
-g.mapleader = ','
+g.mapleader      = ','
 g.maplocalleader = ','
 
 -- Use spaces instead of tabs
@@ -69,13 +76,13 @@ o.ignorecase = true
 o.smartcase = true
 
 -- Undo and backup options
-o.backup = false
+o.backup      = false
 o.writebackup = false
-o.undofile = true
-o.swapfile = false
+o.undofile    = true
+o.swapfile    = false
 
 o.backupdir = '/home/matthias/.config/nvim/temp_dirs/backupdir/'
-o.undodir = '/home/matthias/.config/nvim/temp_dirs/undodir/'
+o.undodir   = '/home/matthias/.config/nvim/temp_dirs/undodir/'
 
 o.history = 500
 
@@ -85,11 +92,15 @@ o.wildmode = "longest,list:longest,full"
 -- activate mouse
 o.mouse="a"
 
+-- disable folding
+o.foldenable = false
+
 -- jump to last cursor position when opening buffer (see :h last-position-jump)
 vim.api.nvim_create_autocmd("BufReadPost", { command = [[if &ft !~# 'commit\|rebase' && line("'\"") > 1 && line("'\"") <= line("$") | exe 'normal! g`"' | endif]] })
 
 -- don't auto comment new line
 vim.api.nvim_create_autocmd("BufEnter", { command = [[set formatoptions-=cro]] })
+
 
 ---------------------------------------------------------------
 -- Key bindings
@@ -105,7 +116,9 @@ end
 
 -- treat long lines as break lines (useful when moving around in them)
 map('n', 'j', 'gj')
+map('v', 'j', 'gj')
 map('n', 'k', 'gk')
+map('v', 'k', 'gk')
 
 -- open new tab in directory of current buffer
 map('n', '<leader>te', ':tabedit <c-r>=expand("%:p:h")<cr>/')
@@ -125,6 +138,10 @@ map('v', '<leader>y', '"*y')
 map('v', '<leader>p', '"*p')
 map('v', '<leader>Y', '"+y')
 map('v', '<leader>P', '"+p')
+
+-- easy align
+map('n', 'ga', '<Plug>(EasyAlign)')
+map('v', 'ga', '<Plug>(EasyAlign)')
 
 ---------------------------------------------------------------
 -- Vim-Latex
@@ -214,3 +231,28 @@ vim.keymap.set("n", "<c-p>", "<Plug>(YankyCycleBackward)")
 -- Fugitive
 ---------------------------------------------------------------
 vim.o.diffopt='vertical'
+
+---------------------------------------------------------------
+-- Orgmode
+---------------------------------------------------------------
+
+-- Load custom tree-sitter grammar for org filetype
+require('orgmode').setup_ts_grammar()
+
+-- Tree-sitter configuration
+require'nvim-treesitter.configs'.setup {
+  -- If TS highlights are not enabled at all, or disabled via ``disable`` prop, highlighting will fallback to default Vim syntax highlighting
+  highlight = {
+    enable = true,
+    disable = {'org'}, -- Remove this to use TS highlighter for some of the highlights (Experimental)
+    additional_vim_regex_highlighting = {'org'}, -- Required since TS highlighter doesn't support all syntax features (conceal)
+  },
+  ensure_installed = {'org'}, -- Or run :TSUpdate org
+}
+
+require('orgmode').setup({
+  org_agenda_files = {'~/Work/org/*', '~/Work/org/calendars/work/*', '~/Work/org/calendars/home/*'},
+  org_default_notes_file = '~/Work/org/notes.org',
+  win_split_mode = 'vertical',
+})
+
